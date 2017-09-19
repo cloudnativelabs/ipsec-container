@@ -1,14 +1,18 @@
 FROM alpine:latest
 
-RUN apk add --update --no-cache strongswan
+VOLUME /ipsec.secrets.d
+VOLUME /ipsec.config.d
+VOLUME /ipsec.d
 
-# mkdir -p /etc/ipsec.secrets.d/ && \
-# mkdir -p /etc/ipsec.config.d/
+ENV SECRETS_DIR=/ipsec.d
+
+RUN apk add --update --no-cache \
+      strongswan \
+      openssl
 
 ADD files/ipsec.conf /etc/ipsec.conf
 ADD files/ipsec.secrets /etc/ipsec.secrets
+ADD generate_secrets.sh /generate_secrets.sh
+ADD entrypoint.sh /entrypoint.sh
 
-VOLUME /etc/ipsec.secrets.d
-VOLUME /etc/ipsec.config.d
-
-CMD ipsec start --nofork
+ENTRYPOINT "/entrypoint.sh"
